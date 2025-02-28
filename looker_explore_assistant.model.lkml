@@ -1,20 +1,39 @@
 connection: "looker_explore_assistant"
 
-# include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
-# include: "/**/*.view.lkml"                 # include all views in this project
-# include: "my_dashboard.dashboard.lookml"   # include a LookML dashboard called my_dashboard
+# include all the views
+include: "/Views/**/*.view.lkml"
 
-# # Select the views that should be a part of this model,
-# # and define the joins that connect them together.
-#
-# explore: order_items {
-#   join: orders {
-#     relationship: many_to_one
-#     sql_on: ${orders.id} = ${order_items.order_id} ;;
-#   }
-#
-#   join: users {
-#     relationship: many_to_one
-#     sql_on: ${users.id} = ${orders.user_id} ;;
-#   }
-# }
+datagroup: explore_assistant_vendorperform_default_datagroup {
+  # sql_trigger: SELECT MAX(id) FROM etl_log;;
+  max_cache_age: "1 hour"
+}
+
+persist_with: explore_assistant_vendorperform_default_datagroup
+
+named_value_format: Greek_Number_Format {
+  value_format: "[>=1000000000]0.0,,,\"B\";[>=1000000]0.0,,\"M\";[>=1000]0.0,\"K\";0.0"
+}
+
+explore: vendor_performance {
+  sql_always_where: ${vendor_performance.client_mandt} = '{{ _user_attributes['client_id_rep'] }}'
+    and ${language_map.looker_locale}='{{ _user_attributes['locale'] }}'
+    ;;
+
+  join: language_map {
+    fields: []
+    type: left_outer
+    sql_on: ${vendor_performance.language_key} = ${language_map.language_key} ;;
+    relationship: many_to_one
+  }
+
+  join: materials_valuation_v2 {
+    type: left_outer
+    relationship: many_to_one
+    sql_on: ${vendor_performance.client_mandt} = ${materials_valuation_v2.client_mandt}
+          and ${vendor_performance.material_number} = ${materials_valuation_v2.material_number_matnr}
+          and ${vendor_performance.plant} = ${materials_valuation_v2.valuation_area_bwkey}
+          and ${vendor_performance.month_year} = ${materials_valuation_v2.month_year}
+          and ${materials_valuation_v2.valuation_type_bwtar} = ''
+          ;;
+  }
+}
