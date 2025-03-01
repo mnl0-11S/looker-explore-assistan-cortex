@@ -1,5 +1,5 @@
 application: explore_assistant {
-  label: "Explore Assistant"
+  label: "Explore Assistant Cortex"
   # url: "https://localhost:8080/bundle.js"
   file: "/bundle/bundle.js"
   entitlements: {
