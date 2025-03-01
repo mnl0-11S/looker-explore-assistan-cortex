@@ -1,4 +1,4 @@
-connection: "looker_explore_assistant"
+connection: "cortex-looker"
 
 # include all the views
 include: "/Views/**/*.view.lkml"
