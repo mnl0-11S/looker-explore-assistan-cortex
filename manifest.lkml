@@ -1,3 +1,18 @@
+constant: GCP_PROJECT {
+  value: "co-grupoexito-sap-denodo-poc"
+  export: override_required
+}
+
+constant: REPORTING_DATASET {
+  value: "REPORTING_PRD"
+  export: override_required
+}
+
+constant: CLIENT {
+  value: "400"
+  export: override_required
+}
+
 application: explore_assistant {
   label: "Explore Assistant Cortex"
   # url: "https://localhost:8080/bundle.js"
