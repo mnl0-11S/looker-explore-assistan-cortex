@@ -1,33 +1,31 @@
 connection: "looker_explore_assistant"
-
 # # include all the views
 include: "/Views/**/*.view.lkml"
-
 datagroup: explore_assistant_vendorperform_default_datagroup {
   # sql_trigger: SELECT MAX(id) FROM etl_log;;
   max_cache_age: "1 hour"
 }
-
 # persist_with: explore_assistant_vendorperform_default_datagroup
-
 named_value_format: Greek_Number_Format {
   value_format: "[>=1000000000]0.0,,,\"B\";[>=1000000]0.0,,\"M\";[>=1000]0.0,\"K\";0.0"
 }
-
+explore: accounts_payable_overview_v2 {
+  sql_always_where: ${accounts_payable_overview_v2.client_mandt} =  '{{ _user_attributes['client_id_rep'] }}' ;;
+  hidden: yes
+}
+explore: accounts_payable_turnover_v2 {
+  sql_always_where: ${accounts_payable_turnover_v2.client_mandt} = '{{ _user_attributes['client_id_rep'] }}' ;;
+  hidden: yes
+}
 explore: vendor_performance {
   sql_always_where: ${vendor_performance.client_mandt} = '{{ _user_attributes['client_id_rep'] }}'
-    and ${language_map.looker_locale}='es_ES'
-    ;;
-
+    and ${language_map.looker_locale}='es_ES';;
   join: language_map {
     fields: []
     type: left_outer
     sql_on: ${vendor_performance.language_key} = ${language_map.language_key} ;;
     relationship: many_to_one
   }
-
-
-
   join: materials_valuation_v2 {
     type: left_outer
     relationship: many_to_one
@@ -35,21 +33,17 @@ explore: vendor_performance {
           and ${vendor_performance.material_number} = ${materials_valuation_v2.material_number_matnr}
           and ${vendor_performance.plant} = ${materials_valuation_v2.valuation_area_bwkey}
           and ${vendor_performance.month_year} = ${materials_valuation_v2.month_year}
-          and ${materials_valuation_v2.valuation_type_bwtar} = ''
-          ;;
+          and ${materials_valuation_v2.valuation_type_bwtar} = '' ;;
   }
-
 
 }
 explore: sales_orders {
-
     join: language_map {
       fields: []
       type: left_outer
       sql_on: ${language_map.looker_locale}='es_ES' ;;
       relationship: many_to_one
     }
-
     join: deliveries{
       type: left_outer
       relationship: one_to_many
@@ -57,7 +51,6 @@ explore: sales_orders {
           and ${sales_orders.item_posnr}=${deliveries.sales_order_item_vgpos}
           and ${sales_orders.client_mandt}=${deliveries.client_mandt};;
     }
-
     join: currency_conversion_new {
       type: left_outer
       relationship: one_to_many
@@ -67,7 +60,6 @@ explore: sales_orders {
           and ${currency_conversion_new.kurst} = "M"
           ;;
     }
-
     join: billing {
       type: left_outer
       relationship: one_to_many
@@ -75,7 +67,6 @@ explore: sales_orders {
           and ${sales_orders.item_posnr}=${billing.sales_document_item_aupos}
           and ${sales_orders.client_mandt}=${billing.client_mandt} ;;
     }
-
     join: materials_md {
       type: left_outer
       relationship: one_to_many
@@ -83,14 +74,12 @@ explore: sales_orders {
           and ${sales_orders.client_mandt}=${materials_md.client_mandt} and
           ${materials_md.language_spras}=${language_map.language_key};;
     }
-
     join: customers_md {
       type: left_outer
       relationship: one_to_many
       sql_on: ${sales_orders.client_mandt}=${customers_md.client_mandt}
         and ${sales_orders.sold_to_party_kunnr} = ${customers_md.customer_number_kunnr};;
     }
-
     join: customers_md_partner_function {
       from: customers_md
       type: left_outer
@@ -98,7 +87,6 @@ explore: sales_orders {
       sql_on: ${sales_orders.client_mandt}=${customers_md_partner_function.client_mandt}
         and ${sales_orders.customer_kunnr} = ${customers_md_partner_function.customer_number_kunnr};;
     }
-
     join: countries_md {
       type: left_outer
       relationship: one_to_many
@@ -106,7 +94,6 @@ explore: sales_orders {
           and ${countries_md.client_mandt}=${sales_orders.client_mandt}
           and ${countries_md.language_spras}=${language_map.language_key} ;;
     }
-
     join: sales_organizations_md {
       type: left_outer
       relationship: one_to_many
@@ -121,7 +108,6 @@ explore: sales_orders {
             and  ${sales_orders.client_mandt}=${distribution_channels_md.client_mandt}
             and ${distribution_channels_md.language_spras}=${language_map.language_key};;
     }
-
     join: sales_order_pricing {
       type: left_outer
       relationship: one_to_many
@@ -129,7 +115,6 @@ explore: sales_orders {
             AND ${sales_orders.condition_number_knumv}=${sales_order_pricing.number_of_the_document_condition_knumv}
             AND ${sales_orders.item_posnr} = ${sales_order_pricing.condition_item_number_kposn};;
     }
-
     join: one_touch_order {
       type: left_outer
       relationship: one_to_many
@@ -137,7 +122,6 @@ explore: sales_orders {
             and  ${sales_orders.sales_document_vbeln}=${one_touch_order.vbapsales_document_vbeln}
             and ${sales_orders.item_posnr}=${one_touch_order.vbapsales_document_item_posnr};;
     }
-
     join: sales_order_schedule_line_dt{
       type: left_outer
       relationship: one_to_many
@@ -145,7 +129,6 @@ explore: sales_orders {
             and  ${sales_orders.sales_document_vbeln}=${sales_order_schedule_line_dt.sales_order_schedule_line_sales_document_vbeln}
             and ${sales_orders.item_posnr}=${sales_order_schedule_line_dt.sales_order_schedule_line_sales_document_item_posnr};;
     }
-
     join: divisions_md {
       type: left_outer
       relationship: one_to_many
@@ -153,14 +136,12 @@ explore: sales_orders {
             and ${sales_orders.division_spart}=${divisions_md.division_spart}
             and ${language_map.language_key}=${divisions_md.language_key_spras} ;;
     }
-
     join: sales_order_header_status {
       type: left_outer
       relationship: one_to_many
       sql_on: ${sales_orders.client_mandt}=${sales_order_header_status.client_mandt}
         and ${sales_orders.sales_document_vbeln}=${sales_order_header_status.sales_document_vbeln};;
     }
-
     join: sales_order_partner_function {
       type: left_outer
       relationship: one_to_many
@@ -168,16 +149,29 @@ explore: sales_orders {
             and ${sales_orders.sales_document_vbeln}= ${sales_order_partner_function.sales_document_vbeln}
             and ${sales_orders.item_posnr} = ${sales_order_partner_function.item_posnr};;
     }
-
     join: sales_order_partner_function_header {
       from: sales_order_partner_function
       type: left_outer
       relationship: one_to_many
       sql_on: ${sales_orders.client_mandt}=${sales_order_partner_function_header.client_mandt}
           and ${sales_orders.sales_document_vbeln}= ${sales_order_partner_function_header.sales_document_vbeln}
-          and (${sales_order_partner_function.item_posnr} is Null or ${sales_order_partner_function_header.item_posnr} = '000000');;
+          and (${sales_order_partner_function.item_posnr} is Null or ${sales_order_partner_function_header.item_posnr} = '00000');;
     }
-
     sql_always_where: ${client_mandt}='{{ _user_attributes['client_id_rep'] }}' ;;
-
   }
+explore: days_payable_outstanding_v2 {
+  sql_always_where: ${client_mandt} = '{{ _user_attributes['client_id_rep'] }}' ;;
+  hidden: yes
+}
+explore: accounts_payable_v2 {
+  sql_always_where: ${accounts_payable_v2.client_mandt} =  '{{ _user_attributes['client_id_rep'] }}';;
+  hidden: yes
+}
+explore: cash_discount_utilization {
+  sql_always_where: ${client_mandt} = '{{ _user_attributes['client_id_rep'] }}';;
+  hidden: yes
+}
+explore: materials_valuation_v2 {
+  sql_always_where: ${client_mandt} = '{{ _user_attributes['client_id_rep'] }}' ;;
+  hidden: yes
+}
