@@ -38,6 +38,7 @@ explore: vendor_performance {
 
 }
 explore: sales_orders {
+  hidden: yes
     join: language_map {
       fields: []
       type: left_outer
